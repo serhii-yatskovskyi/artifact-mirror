@@ -2,3 +2,6 @@
 /target
 *.p12
 *.jks
+*.crt
+*.key
+*.pem

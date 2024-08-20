@@ -36,9 +36,9 @@ public class ApplicationProperties {
 
     enum Property {
         SERVER_PORT("server.port", "443"),
-        KEYSTORE_PATH("server.ssl.key-store", true),
-        KEYSTORE_PASSWORD("server.ssl.key-store-password", true),
-        KEYSTORE_ALIAS("server.ssl.key-store-alias", true),
+        SSL_CERTIFICATE_PATH("server.ssl.certificate", true),
+        SSL_CA_BUNDLE_PATH("server.ssl.ca-bundle", false),
+        SSL_PRIVATE_KEY_PATH("server.ssl.private-key", true),
         CODEARTIFACT_DOMAIN("aws.codeartifact.domain", true),
         CODEARTIFACT_DOMAIN_OWNNER("aws.codeartifact.domain-owner", true),
         CODEARTIFACT_REGION("aws.codeartifact.region", true),
