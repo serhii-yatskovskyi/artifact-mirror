@@ -7,15 +7,11 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
 public class Application {
 
@@ -41,36 +37,20 @@ public class Application {
             throws IOException, GeneralSecurityException {
 
         SSLContext sslContext = SSLContext.getInstance("TLS");
-        KeyStore keyStore = loadKeyStore(keyStoreFilePath, keyStorePassword);
+        KeyStore keyStore = (keyStoreFilePath.endsWith("p12"))
+                ? KeyStore.getInstance("PKCS12")
+                : KeyStore.getInstance("JKS");
+        try (InputStream fileContent = new FileInputStream(keyStoreFilePath);) {
+            keyStore.load(fileContent, keyStorePassword);
+        } catch (Throwable e) {
+            System.err.println("Error loading keystore from " + keyStoreFilePath + ".");
+            throw e;
+        }
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         keyManagerFactory.init(keyStore, keyStorePassword);
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(keyStore);
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         return sslContext;
-    }
-
-    private static KeyStore loadKeyStore(String keyStoreFilePath, char[] keyStorePassword)
-            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
-
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        InputStream fileContent = null;
-        try {
-            if (keyStoreFilePath.startsWith("classpath:")) {
-                keyStoreFilePath = keyStoreFilePath.substring("classpath:".length());
-                fileContent = Application.class.getClassLoader().getResourceAsStream(keyStoreFilePath);
-                if (fileContent == null) {
-                    throw new FileNotFoundException(keyStoreFilePath);
-                }
-            } else {
-                fileContent = new FileInputStream(keyStoreFilePath);
-            }
-            keyStore.load(fileContent, keyStorePassword);
-            return keyStore;
-        } finally {
-            if (fileContent != null) {
-                fileContent.close();
-            }
-        }
     }
 }

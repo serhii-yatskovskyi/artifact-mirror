@@ -36,9 +36,9 @@ public class ApplicationProperties {
 
     enum Property {
         SERVER_PORT("server.port", "443"),
-        KEYSTORE_PATH("server.ssl.key-store", "classpath:keystore.p12"),
-        KEYSTORE_PASSWORD("server.ssl.key-store-password", "123456"),
-        KEYSTORE_ALIAS("server.ssl.key-store-alias", "codeartifact.private.bayaweaver.org"),
+        KEYSTORE_PATH("server.ssl.key-store", true),
+        KEYSTORE_PASSWORD("server.ssl.key-store-password", true),
+        KEYSTORE_ALIAS("server.ssl.key-store-alias", true),
         CODEARTIFACT_DOMAIN("aws.codeartifact.domain", true),
         CODEARTIFACT_DOMAIN_OWNNER("aws.codeartifact.domain-owner", true),
         CODEARTIFACT_REGION("aws.codeartifact.region", true),
