@@ -24,6 +24,9 @@ java -jar codeartifact-proxy-1.0.4.jar\
  --server.ssl.key-store-alias=...
 ```
 
+> **Warning!** An SSL certificate in the key store must be issued by any trusted CA, i.e. not be self-signed. In case
+> the certificate is self-signed, Maven is not able to verify it and immediately stops execution by an error.  
+
 This command runs the application on the port 443. To change the port, perform the command above with the parameter
 `--server.port`.
 
