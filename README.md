@@ -26,9 +26,9 @@ codeartifact-endpoint-1.1.1.jar
 - `--aws.access-key-id`, `--aws.secret-access-key`. By default, the application uses a standard approach of
   authorization in AWS (~/.aws/credentials). These options allow providing an alternative AWS access key id and the
   secret key.
-- `--server.ssl.certificate`, `--server.ssl.private-key`, ``. An alternative SSL certificate file (certificate.crt) and
-  its private key. The certificate authority bundle (the root certificate ca_bundle.crt) is optional. All options
-  support a relative path: `--server.ssl.certificate=~/certificate.crt`.
+- `--server.ssl.certificate`, `--server.ssl.private-key`, `--server.ssl.ca-bundle`. An alternative SSL certificate
+  file (certificate.crt) and its private key. The certificate authority bundle (the root certificate ca_bundle.crt) is
+  optional. All options support a relative path: `--server.ssl.certificate=~/certificate.crt`.
 
 ## Running Jar-File
 
@@ -66,7 +66,8 @@ by an error. To avoid this, either the certificate must be issued by a trusted C
 added to the Java Key Store. There are multiple actual solutions, each of them depends on a network architecture and has
 it's proc and cons.
 
-The value of the `[codeartifact-endpoint-address]` parameter depends on the SSL certificate used. Maven requires an HTTPS
+The value of the `[codeartifact-endpoint-address]` parameter depends on the SSL certificate used. Maven requires an
+HTTPS
 connection and a trusted SSL certificate; otherwise, it terminates the connection with an error. To avoid this, either
 the certificate must be issued by a trusted CA or a self-signed certificate must be added to the Java Key Store. The
 specific solution depends on your network architecture and has its own pros and cons.
@@ -84,7 +85,8 @@ file on each local machine connected to the VPN:
 192.168.1.5   <ssl-certificate-domain>
 ```
 
-where `192.168.1.5` is the IP address of the CodeArtifact Endpoint server. Then, replace `<codeartifact-endpoint-address>`
+where `192.168.1.5` is the IP address of the CodeArtifact Endpoint server. Then, replace
+`<codeartifact-endpoint-address>`
 in
 the `<repository>` section of your `pom.xml` with the value of `ssl-certificate-domain`.
 
