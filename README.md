@@ -8,12 +8,10 @@ regularly to maintain access. The CodeArtifact Endpoint is designed to act as a 
 developer's local machine, BitBucket, etc.) and CodeArtifact, routing all requests to the service and equipping them
 with an authorization token.
 
-## Running Jar-File
-
 ### Synopsys:
 
 ```
-java -jar codeartifact-endpoint-1.1.1.jar
+codeartifact-endpoint-1.1.1.jar
 --aws.codeartifact.domain=<value>
 --aws.codeartifact.domain-owner=<value>
 --aws.codeartifact.region=<value>
@@ -21,12 +19,6 @@ java -jar codeartifact-endpoint-1.1.1.jar
 [--server.ssl.certificate=<value> & --server.ssl.private-key=<value> [--server.ssl.ca-bundle=<value>]]
 [--server.port=<value>]
 ```
-
-In simple case, the application can be run by the following command:
-
-```shell
-java -jar codeartifact-endpoint-1.1.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domain-owner=<value> --aws.codeartifact.region=<value>
-``` 
 
 ### Options
 
@@ -37,6 +29,14 @@ java -jar codeartifact-endpoint-1.1.1.jar --aws.codeartifact.domain=<value> --aw
 - `--server.ssl.certificate`, `--server.ssl.private-key`, ``. An alternative SSL certificate file (certificate.crt) and
   its private key. The certificate authority bundle (the root certificate ca_bundle.crt) is optional. All options
   support a relative path: `--server.ssl.certificate=~/certificate.crt`.
+
+## Running Jar-File
+
+In simple case, the application can be run by the following command:
+
+```shell
+java -jar codeartifact-endpoint-1.1.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domain-owner=<value> --aws.codeartifact.region=<value>
+```
 
 ## Connecting Maven to the CodeArtifact Endpoint
 
