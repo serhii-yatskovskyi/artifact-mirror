@@ -30,7 +30,7 @@ codeartifact-endpoint-1.1.1.jar
   file (certificate.crt) and its private key. The certificate authority bundle (the root certificate ca_bundle.crt) is
   optional. All options support a relative path: `--server.ssl.certificate=~/certificate.crt`.
 
-## Running Jar-File
+## Running CodeArtifact Endpoint
 
 In simple case, the application can be run by the following command:
 
