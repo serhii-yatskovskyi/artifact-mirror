@@ -6,6 +6,7 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.codeartifact.CodeartifactClient;
+import software.amazon.awssdk.services.codeartifact.CodeartifactClientBuilder;
 import software.amazon.awssdk.services.codeartifact.model.GetAuthorizationTokenRequest;
 import software.amazon.awssdk.services.codeartifact.model.GetAuthorizationTokenResponse;
 
@@ -16,8 +17,15 @@ class AuthorizationTokenProvider {
     private final String domain;
     private final String domainOwner;
     private final CodeartifactClient codeartifactClient;
-    private String token;
-    private Instant tokenExpirationTime;
+    private final AuthorizationTokenCache tokenCache;
+
+    AuthorizationTokenProvider(
+            String domain,
+            String domainOwner,
+            String region) {
+
+        this(domain, domainOwner, region, null, null);
+    }
 
     AuthorizationTokenProvider(
             String domain,
@@ -28,30 +36,35 @@ class AuthorizationTokenProvider {
 
         this.domain = domain;
         this.domainOwner = domainOwner;
-        AwsCredentials credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
-        AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
-        this.codeartifactClient = CodeartifactClient.builder()
-                .credentialsProvider(credentialsProvider)
-                .region(Region.of(region))
-                .build();
+        CodeartifactClientBuilder codeartifactClientBuilder = CodeartifactClient.builder();
+        codeartifactClientBuilder.region(Region.of(region));
+        if (accessKeyId != null && !accessKeyId.isEmpty()) {
+            AwsCredentials credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
+            AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
+            codeartifactClientBuilder.credentialsProvider(credentialsProvider);
+        }
+        this.codeartifactClient = codeartifactClientBuilder.build();
+        this.tokenCache = AuthorizationTokenCache.instance();
     }
 
-    String fetchToken() throws TokenNotProvidedException {
-        if (token == null || tokenExpirationTime.isBefore(Instant.now())) {
-            GetAuthorizationTokenRequest req = GetAuthorizationTokenRequest.builder()
-                    .domain(domain)
-                    .domainOwner(domainOwner)
-                    .build();
-            GetAuthorizationTokenResponse res;
-            try {
+    String fetchToken() throws TokenNotFetchedException {
+        try {
+            String token = this.tokenCache.get();
+            if (token == null) {
+                GetAuthorizationTokenRequest req = GetAuthorizationTokenRequest.builder()
+                        .domain(domain)
+                        .domainOwner(domainOwner)
+                        .build();
+                GetAuthorizationTokenResponse res;
                 res = codeartifactClient.getAuthorizationToken(req);
-            } catch (Exception e) {
-                token = null;
-                throw new TokenNotProvidedException(e.getMessage());
+                token = res.authorizationToken();
+                Instant expiration = res.expiration().minus(1, ChronoUnit.MINUTES);
+                this.tokenCache.put(token, expiration);
             }
-            token = res.authorizationToken();
-            tokenExpirationTime = res.expiration().minus(1, ChronoUnit.MINUTES);
+            return token;
+        } catch (Throwable e) {
+            this.tokenCache.evict();
+            throw new TokenNotFetchedException(e);
         }
-        return token;
     }
 }

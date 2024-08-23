@@ -47,7 +47,7 @@ class GeneralHttpHandler implements HttpHandler {
         final String token;
         try {
             token = tokenProvider.fetchToken();
-        } catch (TokenNotProvidedException e) {
+        } catch (TokenNotFetchedException e) {
             exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, e.getMessage().length());
             try (OutputStream initiatorResponseBody = exchange.getResponseBody()) {
                 new ByteArrayInputStream(e.getMessage().getBytes()).transferTo(initiatorResponseBody);
@@ -65,13 +65,17 @@ class GeneralHttpHandler implements HttpHandler {
                  OutputStream codeArtifactRequestBody = connectionToCodeArtifact.getOutputStream()) {
 
                 initiatorRequestBody.transferTo(codeArtifactRequestBody);
-            }
+            } catch (IOException ignored) {}
+        }
+        long codeArtifactContentLength = connectionToCodeArtifact.getContentLengthLong();
+        try (InputStream codeArtifactResponseBody = connectionToCodeArtifact.getInputStream();
+                OutputStream initiatorResponseBody = exchange.getResponseBody()) {
+
+            codeArtifactResponseBody.transferTo(initiatorResponseBody);
+        } catch (IOException e) {
+            codeArtifactContentLength = -1;
         }
         int codeArtifactResponseCode = connectionToCodeArtifact.getResponseCode();
-        exchange.sendResponseHeaders(codeArtifactResponseCode, connectionToCodeArtifact.getContentLengthLong());
-        InputStream codeArtifactResponseBody = connectionToCodeArtifact.getInputStream();
-        try (OutputStream initiatorResponseBody = exchange.getResponseBody()) {
-            codeArtifactResponseBody.transferTo(initiatorResponseBody);
-        }
+        exchange.sendResponseHeaders(codeArtifactResponseCode, codeArtifactContentLength);
     }
 }

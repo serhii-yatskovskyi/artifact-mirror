@@ -36,14 +36,14 @@ public class ApplicationProperties {
 
     enum Property {
         SERVER_PORT("server.port", "443"),
-        SSL_CERTIFICATE_PATH("server.ssl.certificate", true),
+        SSL_CERTIFICATE_PATH("server.ssl.certificate", "certificate.crt"),
         SSL_CA_BUNDLE_PATH("server.ssl.ca-bundle", false),
-        SSL_PRIVATE_KEY_PATH("server.ssl.private-key", true),
+        SSL_PRIVATE_KEY_PATH("server.ssl.private-key", "private.key"),
         CODEARTIFACT_DOMAIN("aws.codeartifact.domain", true),
         CODEARTIFACT_DOMAIN_OWNNER("aws.codeartifact.domain-owner", true),
         CODEARTIFACT_REGION("aws.codeartifact.region", true),
-        AWS_ACCESS_KEY_ID("aws.access-key-id", true),
-        AWS_SECRET_ACCESS_KEY("aws.secret-access-key", true);
+        AWS_ACCESS_KEY_ID("aws.access-key-id", false),
+        AWS_SECRET_ACCESS_KEY("aws.secret-access-key", false);
 
         private final String name;
         private final String defaultValue;
