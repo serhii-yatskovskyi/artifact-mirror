@@ -13,7 +13,7 @@ with an authorization token.
 ### Synopsys:
 
 ```
-java -jar codeartifact-proxy-1.0.4.jar
+java -jar codeartifact-endpoint-1.1.1.jar
 --aws.codeartifact.domain=<value>
 --aws.codeartifact.domain-owner=<value>
 --aws.codeartifact.region=<value>
@@ -25,7 +25,7 @@ java -jar codeartifact-proxy-1.0.4.jar
 In simple case, the application can be run by the following command:
 
 ```shell
-java -jar codeartifact-proxy-1.0.4.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domain-owner=<value> --aws.codeartifact.region=<value>
+java -jar codeartifact-endpoint-1.1.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domain-owner=<value> --aws.codeartifact.region=<value>
 ``` 
 
 ### Options
@@ -54,19 +54,19 @@ without the authentication need. To do this, replace or add the following `<repo
             `aws.codeartifact.domain-owner=111222333444`, and `aws.codeartifact.region=us-east-1` -->
             <!-- A previous value was
             https://my-domain-111222333444.d.codeartifact.us-east-1.amazonaws.com/maven/release/ -->
-            <url>https://[codeartifact-proxy-address]/maven/release/</url>
+            <url>https://[codeartifact-endpoint-address]/maven/release/</url>
         </repository>
     </repositories>
 </project>
 ```
 
-The value of the `[codeartifact-proxy-address]` parameter depends on what SSL certificate is used. During execution,
+The value of the `[codeartifact-endpoint-address]` parameter depends on what SSL certificate is used. During execution,
 Maven requires: 1) connection through HTTPS and 2) a trusted SSL certificate, - otherwise it immediately stops execution
 by an error. To avoid this, either the certificate must be issued by a trusted CA or a self-signed certificate must be
 added to the Java Key Store. There are multiple actual solutions, each of them depends on a network architecture and has
 it's proc and cons.
 
-The value of the `[codeartifact-proxy-address]` parameter depends on the SSL certificate used. Maven requires an HTTPS
+The value of the `[codeartifact-endpoint-address]` parameter depends on the SSL certificate used. Maven requires an HTTPS
 connection and a trusted SSL certificate; otherwise, it terminates the connection with an error. To avoid this, either
 the certificate must be issued by a trusted CA or a self-signed certificate must be added to the Java Key Store. The
 specific solution depends on your network architecture and has its own pros and cons.
@@ -84,12 +84,16 @@ file on each local machine connected to the VPN:
 192.168.1.5   <ssl-certificate-domain>
 ```
 
-where `192.168.1.5` is the IP address of the CodeArtifact Endpoint server. Then, replace `<codeartifact-proxy-address>`
+where `192.168.1.5` is the IP address of the CodeArtifact Endpoint server. Then, replace `<codeartifact-endpoint-address>`
 in
 the `<repository>` section of your `pom.xml` with the value of `ssl-certificate-domain`.
 
 ### Self-Signed Certificates
 
 If you are using a self-signed SSL certificate, you must add it to the default key stores of all JREs installed on your
-local machines. In this case, the `<codeartifact-proxy-address>` in the `<repository>` section of the `pom-xml` must
+local machines. In this case, the `<codeartifact-endpoint-address>` in the `<repository>` section of the `pom-xml` must
 be the actual IP address of the CodeArtifact Endpoint server.
+
+## Default SSL certificate
+
+Domain: codeartifact.private.bayaweaver.org
