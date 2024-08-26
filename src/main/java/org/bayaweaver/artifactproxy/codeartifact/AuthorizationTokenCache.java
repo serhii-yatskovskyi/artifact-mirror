@@ -1,4 +1,4 @@
-package org.bayaweaver.codeartifactproxy;
+package org.bayaweaver.artifactproxy.codeartifact;
 
 import java.time.Instant;
 

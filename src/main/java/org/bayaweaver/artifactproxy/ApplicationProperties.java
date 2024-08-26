@@ -1,4 +1,4 @@
-package org.bayaweaver.codeartifactproxy;
+package org.bayaweaver.artifactproxy;
 
 import java.util.HashMap;
 import java.util.Map;

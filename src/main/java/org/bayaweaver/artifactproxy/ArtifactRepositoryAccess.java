@@ -1,8 +1,9 @@
-package org.bayaweaver.codeartifactproxy;
+package org.bayaweaver.artifactproxy;
 
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import org.bayaweaver.artifactproxy.codeartifact.CodeartifactAuthorizationTokenProvider;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -13,37 +14,44 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
-class GeneralHttpHandler implements HttpHandler {
-    private final URL codeArtifactDomainUrl;
+class ArtifactRepositoryAccess implements HttpHandler {
+    private final URL artifactRepositoryUrl;
     private final AuthorizationTokenProvider tokenProvider;
 
-    GeneralHttpHandler(
-            String codeArtifactDomain,
-            String codeArtifactDomainOwner,
-            String codeArtifactRegion,
+    private ArtifactRepositoryAccess(URL artifactRepositoryUrl, AuthorizationTokenProvider tokenProvider) {
+        this.artifactRepositoryUrl = artifactRepositoryUrl;
+        this.tokenProvider = tokenProvider;
+    }
+
+    public static ArtifactRepositoryAccess codeartifact(
+            String codeartifactDomain,
+            String codeartifactDomainOwner,
+            String codeartifactRegion,
             String accessKeyId,
             String secretAccessKey) {
 
+        URL artifactRepositoryUrl;
         try {
             // "https://bnc-obs-435280699592.d.codeartifact.us-east-2.amazonaws.com";
-            this.codeArtifactDomainUrl = URI
-                    .create("https://" + codeArtifactDomain + "-" + codeArtifactDomainOwner
-                            + ".d.codeartifact." + codeArtifactRegion + ".amazonaws.com")
+            artifactRepositoryUrl = URI
+                    .create("https://" + codeartifactDomain + "-" + codeartifactDomainOwner
+                            + ".d.codeartifact." + codeartifactRegion + ".amazonaws.com")
                     .toURL();
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException("'aws.codeartifact.domain', 'aws.codeartifact.domain-owner'"
                     + "or 'aws.codeartifact.region' has URL-improper character.");
         }
-        this.tokenProvider = new AuthorizationTokenProvider(
-                codeArtifactDomain,
-                codeArtifactDomainOwner,
-                codeArtifactRegion,
+        AuthorizationTokenProvider tokenProvider = new CodeartifactAuthorizationTokenProvider(
+                codeartifactDomain,
+                codeartifactDomainOwner,
+                codeartifactRegion,
                 accessKeyId,
                 secretAccessKey);
+        return new ArtifactRepositoryAccess(artifactRepositoryUrl, tokenProvider);
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle (HttpExchange exchange) throws IOException {
         final String token;
         try {
             token = tokenProvider.fetchToken();
@@ -54,7 +62,7 @@ class GeneralHttpHandler implements HttpHandler {
             }
             return;
         }
-        final URL artifactUrl = URI.create(codeArtifactDomainUrl.toString() + exchange.getRequestURI()).toURL();
+        final URL artifactUrl = URI.create(artifactRepositoryUrl.toString() + exchange.getRequestURI()).toURL();
         HttpURLConnection connectionToCodeArtifact = (HttpURLConnection) artifactUrl.openConnection();
         connectionToCodeArtifact.setRequestMethod(exchange.getRequestMethod());
         connectionToCodeArtifact.setRequestProperty("Authorization", "Bearer " + token);
@@ -65,11 +73,12 @@ class GeneralHttpHandler implements HttpHandler {
                  OutputStream codeArtifactRequestBody = connectionToCodeArtifact.getOutputStream()) {
 
                 initiatorRequestBody.transferTo(codeArtifactRequestBody);
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
         long codeArtifactContentLength = connectionToCodeArtifact.getContentLengthLong();
         try (InputStream codeArtifactResponseBody = connectionToCodeArtifact.getInputStream();
-                OutputStream initiatorResponseBody = exchange.getResponseBody()) {
+             OutputStream initiatorResponseBody = exchange.getResponseBody()) {
 
             codeArtifactResponseBody.transferTo(initiatorResponseBody);
         } catch (IOException e) {

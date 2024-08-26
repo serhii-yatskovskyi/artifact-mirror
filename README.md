@@ -1,17 +1,17 @@
-# CodeArtifact Endpoint
+# Artifact Gateway
 
 ## Description
 
 Access to CodeArtifact is restricted without an option to disable such behavior, so developers must configure Maven to
 use an authorization mechanism. Since the CodeArtifact token expires every 12 hours, Maven settings need to be refreshed
-regularly to maintain access. The CodeArtifact Endpoint is designed to act as a mediator between artifact consumers (a
+regularly to maintain access. The Artifact Gateway is designed to act as a mediator between artifact consumers (a
 developer's local machine, BitBucket, etc.) and CodeArtifact, routing all requests to the service and equipping them
 with an authorization token.
 
 ### Synopsys:
 
 ```
-codeartifact-endpoint-1.1.1.jar
+artifact-gateway-1.1.1.jar
 --aws.codeartifact.domain=<value>
 --aws.codeartifact.domain-owner=<value>
 --aws.codeartifact.region=<value>
@@ -30,17 +30,17 @@ codeartifact-endpoint-1.1.1.jar
   file (certificate.crt) and its private key. The certificate authority bundle (the root certificate ca_bundle.crt) is
   optional. All options support a relative path: `--server.ssl.certificate=~/certificate.crt`.
 
-## Running CodeArtifact Endpoint
+## Running Artifact Gateway
 
 In simple case, the application can be run by the following command:
 
 ```shell
-java -jar codeartifact-endpoint-1.1.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domain-owner=<value> --aws.codeartifact.region=<value>
+java -jar artifact-gateway-1.1.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domain-owner=<value> --aws.codeartifact.region=<value>
 ```
 
-## Connecting Maven to the CodeArtifact Endpoint
+## Connecting Maven to the Artifact Gateway
 
-Once the CodeArtifact Endpoint is running, you can configure Maven to access artifacts through it in a normal way
+Once the Artifact Gateway is running, you can configure Maven to access artifacts through it in a normal way
 without the authentication need. To do this, replace or add the following `<repository>` section in your `pom.xml`:
 
 ```xml
@@ -54,29 +54,29 @@ without the authentication need. To do this, replace or add the following `<repo
             `aws.codeartifact.domain-owner=111222333444`, and `aws.codeartifact.region=us-east-1` -->
             <!-- A previous value was
             https://my-domain-111222333444.d.codeartifact.us-east-1.amazonaws.com/maven/release/ -->
-            <url>https://[codeartifact-endpoint-address]/maven/release/</url>
+            <url>https://[artifact-gateway-address]/maven/release/</url>
         </repository>
     </repositories>
 </project>
 ```
 
-The value of the `[codeartifact-endpoint-address]` parameter depends on what SSL certificate is used. During execution,
+The value of the `[artifact-gateway-address]` parameter depends on what SSL certificate is used. During execution,
 Maven requires: 1) connection through HTTPS and 2) a trusted SSL certificate, - otherwise it immediately stops execution
 by an error. To avoid this, either the certificate must be issued by a trusted CA or a self-signed certificate must be
 added to the Java Key Store. There are multiple actual solutions, each of them depends on a network architecture and has
 it's proc and cons.
 
-The value of the `[codeartifact-endpoint-address]` parameter depends on the SSL certificate used. Maven requires an
+The value of the `[artifact-gateway-address]` parameter depends on the SSL certificate used. Maven requires an
 HTTPS
 connection and a trusted SSL certificate; otherwise, it terminates the connection with an error. To avoid this, either
 the certificate must be issued by a trusted CA or a self-signed certificate must be added to the Java Key Store. The
 specific solution depends on your network architecture and has its own pros and cons.
 
-### CodeArtifact Endpoint as a Server in a Private Network Accessible Through VPN
+### Artifact Gateway as a Server in a Private Network Accessible Through VPN
 
 If the VPN server is available to be configured, you can set it to route all DNS traffic through it. In the private
 network, a private DNS server must be deployed. This DNS server should have an A-record that maps the SSL-certificate
-domain to the private IP address of the CodeArtifact Endpoint server.
+domain to the private IP address of the Artifact Gateway server.
 
 If VPN configuration is not possible, you need to add a record to the `C:/Windows/system32/drivers/etc/hosts`
 file on each local machine connected to the VPN:
@@ -85,17 +85,17 @@ file on each local machine connected to the VPN:
 192.168.1.5   <ssl-certificate-domain>
 ```
 
-where `192.168.1.5` is the IP address of the CodeArtifact Endpoint server. Then, replace
-`<codeartifact-endpoint-address>`
+where `192.168.1.5` is the IP address of the Artifact Gateway server. Then, replace
+`<artifact-gateway-address>`
 in
 the `<repository>` section of your `pom.xml` with the value of `ssl-certificate-domain`.
 
 ### Self-Signed Certificates
 
 If you are using a self-signed SSL certificate, you must add it to the default key stores of all JREs installed on your
-local machines. In this case, the `<codeartifact-endpoint-address>` in the `<repository>` section of the `pom-xml` must
-be the actual IP address of the CodeArtifact Endpoint server.
+local machines. In this case, the `<artifact-gateway-address>` in the `<repository>` section of the `pom-xml` must
+be the actual IP address of the Artifact Gateway server.
 
-## Default SSL certificate
+<!--## Default SSL certificate
 
-Domain: codeartifact.private.bayaweaver.org
+Domain: codeartifact.private.bayaweaver.org-->

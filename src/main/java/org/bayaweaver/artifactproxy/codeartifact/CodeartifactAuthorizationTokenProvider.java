@@ -1,5 +1,7 @@
-package org.bayaweaver.codeartifactproxy;
+package org.bayaweaver.artifactproxy.codeartifact;
 
+import org.bayaweaver.artifactproxy.AuthorizationTokenProvider;
+import org.bayaweaver.artifactproxy.TokenNotFetchedException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -13,13 +15,13 @@ import software.amazon.awssdk.services.codeartifact.model.GetAuthorizationTokenR
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-class AuthorizationTokenProvider {
+public class CodeartifactAuthorizationTokenProvider implements AuthorizationTokenProvider {
     private final String domain;
     private final String domainOwner;
     private final CodeartifactClient codeartifactClient;
     private final AuthorizationTokenCache tokenCache;
 
-    AuthorizationTokenProvider(
+    public CodeartifactAuthorizationTokenProvider(
             String domain,
             String domainOwner,
             String region) {
@@ -27,7 +29,7 @@ class AuthorizationTokenProvider {
         this(domain, domainOwner, region, null, null);
     }
 
-    AuthorizationTokenProvider(
+    public CodeartifactAuthorizationTokenProvider(
             String domain,
             String domainOwner,
             String region,
@@ -47,7 +49,8 @@ class AuthorizationTokenProvider {
         this.tokenCache = AuthorizationTokenCache.instance();
     }
 
-    String fetchToken() throws TokenNotFetchedException {
+    @Override
+    public String fetchToken() throws TokenNotFetchedException {
         try {
             String token = this.tokenCache.get();
             if (token == null) {
