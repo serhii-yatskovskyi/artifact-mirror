@@ -11,31 +11,33 @@ with an authorization token.
 ### Synopsys:
 
 ```
-artifact-gateway-1.1.1.jar
+artifact-gateway-1.2.0.jar
 --aws.codeartifact.domain=<value>
 --aws.codeartifact.domain-owner=<value>
 --aws.codeartifact.region=<value>
 [--aws.access-key-id=<value> & --aws.secret-access-key=<value>]
 [--server.ssl.certificate=<value> & --server.ssl.private-key=<value> [--server.ssl.ca-bundle=<value>]]
-[--server.port=<value>]
+[--server.http.port=<value>]
+[--server.https.port=<value>]
 ```
 
 ### Options
 
-- `--server.port`. Allows to change a server port. The default value is 443.
 - `--aws.access-key-id`, `--aws.secret-access-key`. By default, the application uses a standard approach of
   authorization in AWS (~/.aws/credentials). These options allow providing an alternative AWS access key id and the
   secret key.
 - `--server.ssl.certificate`, `--server.ssl.private-key`, `--server.ssl.ca-bundle`. An alternative SSL certificate
   file (certificate.crt) and its private key. The certificate authority bundle (the root certificate ca_bundle.crt) is
   optional. All options support a relative path: `--server.ssl.certificate=~/certificate.crt`.
+- `--server.http.port`. Allows to change server HTTP port. The default value is 80.
+- `--server.https.port`. Allows to change server HTTPS port. The default value is 443.
 
 ## Running Artifact Gateway
 
 In simple case, the application can be run by the following command:
 
 ```shell
-java -jar artifact-gateway-1.1.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domain-owner=<value> --aws.codeartifact.region=<value>
+java -jar artifact-gateway-1.2.0.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domain-owner=<value> --aws.codeartifact.region=<value>
 ```
 
 ## Connecting Maven to the Artifact Gateway

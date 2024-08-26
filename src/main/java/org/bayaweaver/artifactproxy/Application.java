@@ -1,5 +1,6 @@
 package org.bayaweaver.artifactproxy;
 
+import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsServer;
 
@@ -16,22 +17,27 @@ import java.util.UUID;
 public class Application {
 
     public static void main(String[] args) throws IOException, GeneralSecurityException {
-        ApplicationProperties props = ApplicationProperties.parse(args);
+        ApplicationOptions opts = ApplicationOptions.parse(args);
+        ArtifactRepositoryAccess httpRequestHandler = ArtifactRepositoryAccess.codeartifact(
+                opts.value(ApplicationOptions.Option.CODEARTIFACT_DOMAIN),
+                opts.value(ApplicationOptions.Option.CODEARTIFACT_DOMAIN_OWNER),
+                opts.value(ApplicationOptions.Option.CODEARTIFACT_REGION),
+                opts.value(ApplicationOptions.Option.AWS_ACCESS_KEY_ID),
+                opts.value(ApplicationOptions.Option.AWS_SECRET_ACCESS_KEY));
+        int httpPort = Integer.parseInt(opts.value(ApplicationOptions.Option.HTTP_SERVER_PORT));
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(httpPort), 0);
+        httpServer.createContext("/", httpRequestHandler);
+        httpServer.start();
         SSLContext sslContext = createSslContext(
-                props.value(ApplicationProperties.Property.SSL_CERTIFICATE_PATH),
-                props.value(ApplicationProperties.Property.SSL_CA_BUNDLE_PATH),
-                props.value(ApplicationProperties.Property.SSL_PRIVATE_KEY_PATH));
-        int port = Integer.parseInt(props.value(ApplicationProperties.Property.SERVER_PORT));
-        HttpsServer server = HttpsServer.create(new InetSocketAddress(port), 0);
-        server.setHttpsConfigurator(new HttpsConfigurator(sslContext));
-        server.createContext("/", ArtifactRepositoryAccess.codeartifact(
-                props.value(ApplicationProperties.Property.CODEARTIFACT_DOMAIN),
-                props.value(ApplicationProperties.Property.CODEARTIFACT_DOMAIN_OWNNER),
-                props.value(ApplicationProperties.Property.CODEARTIFACT_REGION),
-                props.value(ApplicationProperties.Property.AWS_ACCESS_KEY_ID),
-                props.value(ApplicationProperties.Property.AWS_SECRET_ACCESS_KEY)));
-        server.start();
-        System.out.println("Server has started on the port " + port);
+                opts.value(ApplicationOptions.Option.SSL_CERTIFICATE_PATH),
+                opts.value(ApplicationOptions.Option.SSL_CA_BUNDLE_PATH),
+                opts.value(ApplicationOptions.Option.SSL_PRIVATE_KEY_PATH));
+        int httpsPort = Integer.parseInt(opts.value(ApplicationOptions.Option.HTTPS_SERVER_PORT));
+        HttpsServer httpsServer = HttpsServer.create(new InetSocketAddress(httpsPort), 0);
+        httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext));
+        httpsServer.createContext("/", httpRequestHandler);
+        httpsServer.start();
+        System.out.println("Server has started on the ports " + httpPort + " (http), " + httpsPort + " (https)");
     }
 
     private static SSLContext createSslContext(
