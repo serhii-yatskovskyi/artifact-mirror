@@ -19,7 +19,7 @@ mvn package
 
 ## Running Application
 
-### Synopsys:
+### Synopsys
 
 ```
 artifact-gateway-1.3.0.jar
@@ -129,7 +129,7 @@ aws_access_key_id = <value>
 aws_secret_access_key = <value>
 EOF
 cd /usr/local
-curl -O https://gitlab.com/-/project/60610561/uploads/16b8040116b59824f04c5d308a34e4c0/artifact-gateway-1.3.0.jar
+curl -O https://github.com/serhii-yatskovskyi/artifact-gateway/releases/download/artifact-gateway-1.3.0/artifact-gateway-1.3.0.jar
 cat << EOF > /etc/systemd/system/artifact-gateway.service
 [Unit]
 Description=Artifact Gateway
