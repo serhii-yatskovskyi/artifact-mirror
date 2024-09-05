@@ -17,6 +17,8 @@ usage will be described [below](#connecting-maven-to-artifact-gateway)
 mvn package
 ```
 
+## Running Application
+
 ### Synopsys:
 
 ```
@@ -34,8 +36,6 @@ artifact-gateway-1.3.0.jar
   [the default credential provider chain](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-default),
   so all approaches to provide credentials are available.
 - `--server.port`. Allows to change server HTTP port. The default value is 80.
-
-## Running Artifact Gateway
 
 In a simple case, the application can be run by the following command:
 
