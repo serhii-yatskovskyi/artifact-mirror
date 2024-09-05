@@ -1,6 +1,5 @@
 package org.bayaweaver.artifactgateway;
 
-
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.bayaweaver.artifactgateway.codeartifact.CodeartifactAuthorizationTokenProvider;
@@ -63,7 +62,7 @@ class ArtifactRepositoryRequestHandler implements HttpHandler {
                 logger.error("Artifact repository access token was not fetched", e);
                 String m = e.getMessage();
                 exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, m.length());
-                new ByteArrayInputStream(m.getBytes()).transferTo(exchange.getResponseBody());
+                new ByteArrayInputStream(m.getBytes()).transferTo(exchange.getResponseBody());  // TODO Maven does not display this message
                 return;
             }
             final URL artifactUrl = URI.create(artifactRepositoryUrl + exchange.getRequestURI()).toURL();

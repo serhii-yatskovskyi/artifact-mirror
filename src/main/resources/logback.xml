@@ -1,5 +1,5 @@
 <configuration>
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <file>artifact-gateway.log</file>
         <append>true</append>
         <encoder>
@@ -7,6 +7,6 @@
         </encoder>
     </appender>
     <root level="INFO">
-        <appender-ref ref="FILE" />
+        <appender-ref ref="STDOUT" />
     </root>
 </configuration>

@@ -37,10 +37,10 @@ public class ApplicationOptions {
     enum Option {
         HTTP_SERVER_PORT("server.port", "80"),
         CODEARTIFACT_DOMAIN("aws.codeartifact.domain", true),
-        CODEARTIFACT_DOMAIN_OWNER("aws.codeartifact.domain-owner", true),
+        CODEARTIFACT_DOMAIN_OWNER("aws.codeartifact.domainOwner", true),
         CODEARTIFACT_REGION("aws.codeartifact.region", true),
-        AWS_ACCESS_KEY_ID("aws.access-key-id", false),
-        AWS_SECRET_ACCESS_KEY("aws.secret-access-key", false);
+        AWS_ACCESS_KEY_ID("aws.accessKeyId", false),
+        AWS_SECRET_ACCESS_KEY("aws.secretKey", false);
 
         private final String name;
         private final String defaultValue;

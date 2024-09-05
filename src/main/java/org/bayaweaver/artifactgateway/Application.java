@@ -5,11 +5,10 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.security.GeneralSecurityException;
 
 public class Application {
 
-    public static void main(String[] args) throws IOException, GeneralSecurityException {
+    public static void main(String[] args) throws IOException {
         ApplicationOptions opts = ApplicationOptions.parse(args);
         HttpHandler httpRequestHandler = ArtifactRepositoryRequestHandler.codeartifact(
                 opts.value(ApplicationOptions.Option.CODEARTIFACT_DOMAIN),
@@ -21,6 +20,6 @@ public class Application {
         HttpServer httpServer = HttpServer.create(new InetSocketAddress(port), 0);
         httpServer.createContext("/", httpRequestHandler);
         httpServer.start();
-        System.out.println("Server is listening " + port + " HTTP port.");
+        System.out.println("Server is listening " + port + " HTTP port");
     }
 }

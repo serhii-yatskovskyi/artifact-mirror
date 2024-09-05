@@ -2,102 +2,138 @@
 
 ## Description
 
-Access to CodeArtifact is restricted without an option to disable such behavior, so developers must configure Maven to
-use an authorization mechanism. Since the CodeArtifact token expires every 12 hours, Maven settings need to be refreshed
-regularly to maintain access. The Artifact Gateway is designed to act as a mediator between artifact consumers (a
-developer's local machine, BitBucket, etc.) and CodeArtifact, routing all requests to the service and equipping them
-with an authorization token.
+Access to CodeArtifact is restricted without an option to disable such behavior, so developers have to configure Maven
+to use an authorization mechanism. Since the CodeArtifact token expires every 12 hours, Maven settings need to be
+refreshed regularly to maintain access. The **Artifact Gateway** is designed to act as a mediator between artifact
+consumers (a developer's local machine, a non-cloud CI/CD, etc.) and CodeArtifact, routing all requests to the service
+and equipping them with an authorization token.
+
+Note that the **Artifact Gateway** can be used only within a private network or on your local machine. The details of
+usage will be described [below](#connecting-maven-to-artifact-gateway)
 
 ### Synopsys:
 
 ```
-artifact-gateway-1.2.0.jar
+artifact-gateway-1.3.0.jar
 --aws.codeartifact.domain=<value>
---aws.codeartifact.domain-owner=<value>
+--aws.codeartifact.domainOwner=<value>
 --aws.codeartifact.region=<value>
-[--aws.access-key-id=<value> & --aws.secret-access-key=<value>]
-[--server.ssl.certificate=<value> & --server.ssl.private-key=<value> [--server.ssl.ca-bundle=<value>]]
-[--server.http.port=<value>]
-[--server.https.port=<value>]
+[--aws.accessKeyId=<value> & --aws.secretKey=<value>]
+[--server.port=<value>]
 ```
 
 ### Options
 
-- `--aws.access-key-id`, `--aws.secret-access-key`. By default, the application uses a standard approach of
-  authorization in AWS (~/.aws/credentials). These options allow providing an alternative AWS access key id and the
-  secret key.
-- `--server.ssl.certificate`, `--server.ssl.private-key`, `--server.ssl.ca-bundle`. An alternative SSL certificate
-  file (certificate.crt) and its private key. The certificate authority bundle (the root certificate ca_bundle.crt) is
-  optional. All options support a relative path: `--server.ssl.certificate=~/certificate.crt`.
-- `--server.http.port`. Allows to change server HTTP port. The default value is 80.
-- `--server.https.port`. Allows to change server HTTPS port. The default value is 443.
+- `--aws.accessKeyId`, `--aws.secretKey`. Allow to pass AWS credentials. The application uses
+  [the default credential provider chain](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-default),
+  so all approaches to provide credentials are available.
+- `--server.port`. Allows to change server HTTP port. The default value is 80.
 
 ## Running Artifact Gateway
 
-In simple case, the application can be run by the following command:
+In a simple case, the application can be run by the following command:
 
-```shell
-java -jar artifact-gateway-1.2.0.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domain-owner=<value> --aws.codeartifact.region=<value>
+```sh
+java -jar artifact-gateway-1.3.0.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
 ```
 
-## Connecting Maven to the Artifact Gateway
+<!--Alternatively, the Artifact Gateway can be run in a Docker container:
+
+```sh
+docker build -t artifact-gateway .
+docker run --rm -e ENV DOMAIN=<value> -e DOMAIN_OWNER=<value> -e REGION=<value> -p 80:80 artifact-gateway
+```
+-->
+
+## Connecting Maven to Artifact Gateway
 
 Once the Artifact Gateway is running, you can configure Maven to access artifacts through it in a normal way
-without the authentication need. To do this, replace or add the following `<repository>` section in your `pom.xml`:
+without the authentication need. It is supposed that the URL to your private CodeArtifact repository has already
+specified in the `pom.xml`:
 
 ```xml
-
 <project>
+  <repositories>
+      <repository>
+          <id>codeartifact</id>
+          <!-- Replace 'my-domain', '111122223333', 'us-east-1' and 'my-repository' on the actual values -->
+          <url>https://my-domain-111122223333.d.codeartifact.us-east-1.amazonaws.com/maven/my-repository</url>
+      </repository>
     ...
-    <repositories>
-        <repository>
-            <id>release</id>
-            <!-- The application has been run with the parameters `aws.codeartifact.domain=my-domain`,
-            `aws.codeartifact.domain-owner=111222333444`, and `aws.codeartifact.region=us-east-1` -->
-            <!-- A previous value was
-            https://my-domain-111222333444.d.codeartifact.us-east-1.amazonaws.com/maven/release/ -->
-            <url>https://[artifact-gateway-address]/maven/release/</url>
-        </repository>
-    </repositories>
+  </repositories>
+  ...
 </project>
 ```
 
-The value of the `[artifact-gateway-address]` parameter depends on what SSL certificate is used. During execution,
-Maven requires: 1) connection through HTTPS and 2) a trusted SSL certificate, - otherwise it immediately stops execution
-by an error. To avoid this, either the certificate must be issued by a trusted CA or a self-signed certificate must be
-added to the Java Key Store. There are multiple actual solutions, each of them depends on a network architecture and has
-it's proc and cons.
+To enable traffic going through Artifact Gateway, add a `<mirror>` section in Maven's `settings.xml` usually located in
+`C:\Users\<username>\.m2` (Windows) or `~/.m2` (Linux, macOS):
 
-The value of the `[artifact-gateway-address]` parameter depends on the SSL certificate used. Maven requires an
-HTTPS
-connection and a trusted SSL certificate; otherwise, it terminates the connection with an error. To avoid this, either
-the certificate must be issued by a trusted CA or a self-signed certificate must be added to the Java Key Store. The
-specific solution depends on your network architecture and has its own pros and cons.
-
-### Artifact Gateway as a Server in a Private Network Accessible Through VPN
-
-If the VPN server is available to be configured, you can set it to route all DNS traffic through it. In the private
-network, a private DNS server must be deployed. This DNS server should have an A-record that maps the SSL-certificate
-domain to the private IP address of the Artifact Gateway server.
-
-If VPN configuration is not possible, you need to add a record to the `C:/Windows/system32/drivers/etc/hosts`
-file on each local machine connected to the VPN:
-
-```
-192.168.1.5   <ssl-certificate-domain>
+```xml
+<settings>
+    <mirrors>
+        <mirror>
+            <id>codeartifact-mirror</id>
+            <!-- Replace 'my-repository' on the actual repository name-->
+            <url>http://<artifact-gateway-ip>/maven/my-repository/
+            </url>
+            <mirrorOf>codeartifact</mirrorOf>
+        </mirror>
+        ...
+    </mirrors>
+    ...
+</settings>
 ```
 
-where `192.168.1.5` is the IP address of the Artifact Gateway server. Then, replace
-`<artifact-gateway-address>`
-in
-the `<repository>` section of your `pom.xml` with the value of `ssl-certificate-domain`.
+> **Attention!** The mirror must be configured using the HTTP protocol, not HTTPS, while the CodeArtifact repository URL
+> should remain HTTPS.
 
-### Self-Signed Certificates
+The value of `<artifact-gateway-ip>` depends on the network architecture you plan to use. There are at least three
+possible solutions illustrated in the picture below. In the **first** and **third** solutions, it is assumed that the
+Artifact Gateway is deployed on a separate machine, which exposes **a private IP address** that can be used as the value
+for `<artifact-gateway-ip>`. In the second solution, the variable must be replaced with `localhost`.
 
-If you are using a self-signed SSL certificate, you must add it to the default key stores of all JREs installed on your
-local machines. In this case, the `<artifact-gateway-address>` in the `<repository>` section of the `pom-xml` must
-be the actual IP address of the Artifact Gateway server.
+> **Note:** If you specify a custom port when running the JAR file, append the port to the IP address or `localhost`,
+> for example, `localhost:4000`.
 
-<!--## Default SSL certificate
+> **Warning!** Do not deploy the Artifact Gateway on a publicly accessible machine!
 
-Domain: codeartifact.private.bayaweaver.org-->
+![Possible Artifact Gateway locations in a network](.doc/artifact-gateway-network.drawio.png)
+
+## Deploying Application on Server (Amazon Linux)
+
+Copy the JAR-file to the server machine:
+
+```sh
+scp -i <rsa-key-file> ./artifact-gateway-1.3.0.jar ec2-user@<server-ip>:/usr/local/
+```
+
+Then connect via SSH to the server and execute the script below.
+
+```sh
+ssh -i <rsa-key-file> ec2-user@<server-ip>
+```
+
+```sh
+sudo -i
+yum install -y java-17-amazon-corretto
+mkdir -R /etc/aws
+cat << EOF > /etc/aws/credentials
+[default]
+aws_access_key_id = <value>
+aws_secret_access_key = <value>
+EOF
+cd /usr/local
+curl -O https://gitlab.com/-/project/60610561/uploads/16b8040116b59824f04c5d308a34e4c0/artifact-gateway-1.3.0.jar
+cat << EOF > /etc/systemd/system/artifact-gateway.service
+[Unit]
+Description=Artifact Gateway
+[Service]
+ExecStart=/usr/bin/java -jar /usr/local/artifact-gateway-1.3.0.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
+Restart=always
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload && systemctl enable artifact-gateway
+systemctl start artifact-gateway
+exit
+```
