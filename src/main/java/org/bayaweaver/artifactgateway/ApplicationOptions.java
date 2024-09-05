@@ -1,4 +1,4 @@
-package org.bayaweaver.artifactproxy;
+package org.bayaweaver.artifactgateway;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,11 +35,7 @@ public class ApplicationOptions {
     }
 
     enum Option {
-        HTTP_SERVER_PORT("server.http.port", "80"),
-        HTTPS_SERVER_PORT("server.https.port", "443"),
-        SSL_CERTIFICATE_PATH("server.ssl.certificate", "certificate.crt"),
-        SSL_CA_BUNDLE_PATH("server.ssl.ca-bundle", false),
-        SSL_PRIVATE_KEY_PATH("server.ssl.private-key", "private.key"),
+        HTTP_SERVER_PORT("server.port", "80"),
         CODEARTIFACT_DOMAIN("aws.codeartifact.domain", true),
         CODEARTIFACT_DOMAIN_OWNER("aws.codeartifact.domain-owner", true),
         CODEARTIFACT_REGION("aws.codeartifact.region", true),

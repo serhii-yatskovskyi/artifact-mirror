@@ -1,7 +1,7 @@
-package org.bayaweaver.artifactproxy.codeartifact;
+package org.bayaweaver.artifactgateway.codeartifact;
 
-import org.bayaweaver.artifactproxy.AuthorizationTokenProvider;
-import org.bayaweaver.artifactproxy.TokenNotFetchedException;
+import org.bayaweaver.artifactgateway.AuthorizationTokenProvider;
+import org.bayaweaver.artifactgateway.TokenNotFetchedException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;

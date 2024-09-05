@@ -1,4 +1,4 @@
-package org.bayaweaver.artifactproxy;
+package org.bayaweaver.artifactgateway;
 
 public interface AuthorizationTokenProvider {
 
