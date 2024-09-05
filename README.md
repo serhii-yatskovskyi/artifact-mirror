@@ -11,6 +11,12 @@ and equipping them with an authorization token.
 Note that the **Artifact Gateway** can be used only within a private network or on your local machine. The details of
 usage will be described [below](#connecting-maven-to-artifact-gateway)
 
+## Building Application
+
+```sh
+mvn package
+```
+
 ### Synopsys:
 
 ```
