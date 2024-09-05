@@ -113,7 +113,7 @@ Copy the JAR-file to the server machine:
 scp -i <rsa-key-file> ./artifact-gateway-1.3.0.jar ec2-user@<server-ip>:/usr/local/
 ```
 
-Then connect via SSH to the server and execute the script below.
+Then connect via SSH to the server and execute the script below **replacing `<value>` placeholders**.
 
 ```sh
 ssh -i <rsa-key-file> ec2-user@<server-ip>
@@ -122,19 +122,19 @@ ssh -i <rsa-key-file> ec2-user@<server-ip>
 ```sh
 sudo -i
 yum install -y java-17-amazon-corretto
-mkdir -R /etc/aws
-cat << EOF > /etc/aws/credentials
+mkdir ~/.aws
+cat << EOF > ~/.aws/credentials
 [default]
-aws_access_key_id = <value>
-aws_secret_access_key = <value>
+aws_access_key_id=<value>
+aws_secret_access_key=<value>
 EOF
-cd /usr/local
-curl -O https://github.com/serhii-yatskovskyi/artifact-gateway/releases/download/artifact-gateway-1.3.0/artifact-gateway-1.3.0.jar
+mkdir /opt/artifact-gateway/
+wget -P /opt/artifact-gateway/ https://github.com/serhii-yatskovskyi/artifact-gateway/releases/download/artifact-gateway-1.3.0/artifact-gateway-1.3.0.jar
 cat << EOF > /etc/systemd/system/artifact-gateway.service
 [Unit]
 Description=Artifact Gateway
 [Service]
-ExecStart=/usr/bin/java -jar /usr/local/artifact-gateway-1.3.0.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
+ExecStart=/usr/bin/java -jar /opt/artifact-gateway/artifact-gateway-1.3.0.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
 Restart=always
 [Install]
 WantedBy=multi-user.target
