@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -35,14 +34,14 @@ class ArtifactRepositoryRequestHandler implements HttpHandler {
 
         URL artifactRepositoryUrl;
         try {
-            // "https://bnc-obs-435280699592.d.codeartifact.us-east-2.amazonaws.com";
+            // "https://my-domain-111122223333.d.codeartifact.us-east-1.amazonaws.com";
             artifactRepositoryUrl = URI
                     .create("https://" + codeartifactDomain + "-" + codeartifactDomainOwner
                             + ".d.codeartifact." + codeartifactRegion + ".amazonaws.com")
                     .toURL();
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("'aws.codeartifact.domain', 'aws.codeartifact.domain-owner'"
-                    + "or 'aws.codeartifact.region' has URL-improper character.");
+            throw new IllegalArgumentException("URL-improper symbol in 'aws.codeartifact.domain',"
+                    + " 'aws.codeartifact.domain-owner' or 'aws.codeartifact.region'");
         }
         AuthorizationTokenProvider tokenProvider = new CodeartifactAuthorizationTokenProvider(
                 codeartifactDomain,
@@ -55,15 +54,16 @@ class ArtifactRepositoryRequestHandler implements HttpHandler {
 
     @Override
     public void handle (HttpExchange exchange) {
+        logger.debug("{}: redirection initiated", exchange.getRequestMethod() + " " + exchange.getRequestURI());
         try (exchange) {
             final String token;
             try {
                 token = tokenProvider.fetchToken();
             } catch (TokenNotFetchedException e) {
-                exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, e.getMessage().length());
-                try (OutputStream initiatorResponseBody = exchange.getResponseBody()) {
-                    new ByteArrayInputStream(e.getMessage().getBytes()).transferTo(initiatorResponseBody);
-                }
+                logger.error("Artifact repository access token was not fetched", e);
+                String m = e.getMessage();
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, m.length());
+                new ByteArrayInputStream(m.getBytes()).transferTo(exchange.getResponseBody());
                 return;
             }
             final URL artifactUrl = URI.create(artifactRepositoryUrl + exchange.getRequestURI()).toURL();
@@ -92,11 +92,13 @@ class ArtifactRepositoryRequestHandler implements HttpHandler {
                 artifactConnection.getInputStream().transferTo(exchange.getResponseBody());
             }
         } catch (IOException e) {
-            logger.error("{} {}: {}", exchange.getRequestMethod(), exchange.getRequestURI().toString(), e.getMessage());
+            logger.error(
+                    "{}: {}",
+                    exchange.getRequestMethod() + " " + exchange.getRequestURI().toString(), e.getMessage());
         } catch (Exception e) {
-            logger.atError()
-                    .setCause(e)
-                    .log("{} {}: Unexpected error.", exchange.getRequestMethod(), exchange.getRequestURI().toString());
+            logger.atError().setCause(e).log(
+                    "{}: unexpected error",
+                    exchange.getRequestMethod() + " " + exchange.getRequestURI().toString());
         }
     }
 }

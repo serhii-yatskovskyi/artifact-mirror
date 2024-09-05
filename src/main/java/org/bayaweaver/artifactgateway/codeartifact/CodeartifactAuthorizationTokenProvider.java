@@ -24,14 +24,6 @@ public class CodeartifactAuthorizationTokenProvider implements AuthorizationToke
     public CodeartifactAuthorizationTokenProvider(
             String domain,
             String domainOwner,
-            String region) {
-
-        this(domain, domainOwner, region, null, null);
-    }
-
-    public CodeartifactAuthorizationTokenProvider(
-            String domain,
-            String domainOwner,
             String region,
             String accessKeyId,
             String secretAccessKey) {

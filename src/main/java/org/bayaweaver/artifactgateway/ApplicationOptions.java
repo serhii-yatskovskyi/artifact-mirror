@@ -13,25 +13,25 @@ public class ApplicationOptions {
     static ApplicationOptions parse(String[] args) {
         Map<Option, String> values = new HashMap<>();
         for (String arg : args) {
-            for (Option option : Option.values()) {
-                if (arg.startsWith("--" + option.name + "=")) {
-                    values.put(option, arg.substring(arg.indexOf('=') + 1));
+            for (Option o : Option.values()) {
+                if (arg.startsWith("--" + o.name + "=")) {
+                    values.put(o, arg.substring(arg.indexOf('=') + 1));
                 }
             }
         }
-        for (Option option : Option.values()) {
-            if (!values.containsKey(option)) {
-                if (option.required) {
-                    throw new IllegalArgumentException("Missing required option '" + option.name + "'.");
+        for (Option o : Option.values()) {
+            if (!values.containsKey(o)) {
+                if (o.required) {
+                    throw new IllegalArgumentException("Missing required option '" + o.name + "'");
                 }
-                values.put(option, option.defaultValue);
+                values.put(o, o.defaultValue);
             }
         }
         return new ApplicationOptions(values);
     }
 
-    String value(Option propertyOption) {
-        return values.get(propertyOption);
+    String value(Option o) {
+        return values.get(o);
     }
 
     enum Option {
