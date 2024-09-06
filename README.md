@@ -62,7 +62,6 @@ specified in the `pom.xml`:
   <repositories>
       <repository>
           <id>codeartifact</id>
-          <!-- Replace 'my-domain', '111122223333', 'us-east-1' and 'my-repository' on the actual values -->
           <url>https://my-domain-111122223333.d.codeartifact.us-east-1.amazonaws.com/maven/my-repository</url>
       </repository>
     ...
@@ -79,7 +78,7 @@ To enable traffic going through Artifact Gateway, add a `<mirror>` section in Ma
     <mirrors>
         <mirror>
             <id>codeartifact-mirror</id>
-            <!-- Replace 'my-repository' on the actual repository name-->
+            <!-- Replace 'my-repository' on the actual repository name -->
             <url>http://<artifact-gateway-ip>/maven/my-repository/
             </url>
             <mirrorOf>codeartifact</mirrorOf>
@@ -90,8 +89,8 @@ To enable traffic going through Artifact Gateway, add a `<mirror>` section in Ma
 </settings>
 ```
 
-> **Attention!** The mirror must be configured using the HTTP protocol, not HTTPS, while the CodeArtifact repository URL
-> should remain HTTPS.
+> **Attention!** The mirror connection must rely on HTTP protocol, not HTTPS, while the CodeArtifact repository URL in
+> the `pom.xml` should remain HTTPS.
 
 The value of `<artifact-gateway-ip>` depends on the network architecture you plan to use. There are at least three
 possible solutions illustrated in the picture below. In the **first** and **third** solutions, it is assumed that the
