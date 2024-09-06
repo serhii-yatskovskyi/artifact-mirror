@@ -8,8 +8,8 @@ refreshed regularly to maintain access. The **Artifact Gateway** is designed to 
 consumers (a developer's local machine, a non-cloud CI/CD, etc.) and CodeArtifact, routing all requests to the service
 and equipping them with an authorization token.
 
-Note that the **Artifact Gateway** can be used only within a private network or on your local machine. The details of
-usage will be described [below](#connecting-maven-to-artifact-gateway)
+Note that the Artifact Gateway can be used only within a private network or on your local machine. The details of
+usage are described [below](#connecting-maven-to-artifact-gateway)
 
 ## Building Application
 
