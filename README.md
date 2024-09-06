@@ -138,7 +138,8 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 EOF
-systemctl daemon-reload && systemctl enable artifact-gateway
+systemctl daemon-reload
+systemctl enable artifact-gateway
 systemctl start artifact-gateway
 exit
 ```
