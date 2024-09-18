@@ -1,15 +1,15 @@
-# Artifact Gateway
+# Artifact Mirror
 
 ## Description
 
 Access to CodeArtifact is restricted without an option to disable such behavior, so developers have to configure Maven
 to use an authorization mechanism. Since the CodeArtifact token expires every 12 hours, Maven settings need to be
-refreshed regularly to maintain access. The **Artifact Gateway** is designed to act as a mediator between artifact
+refreshed regularly to maintain access. The **Artifact Mirror** is designed to act as a mediator between artifact
 consumers (a developer's local machine, a non-cloud CI/CD, etc.) and CodeArtifact, routing all requests to the service
 and equipping them with an authorization token.
 
-Note that the Artifact Gateway can be used only within a private network or on your local machine. The details of
-usage are described [below](#connecting-maven-to-artifact-gateway)
+Note that the Artifact Mirror can be used only within a private network or on your local machine. The details of
+usage are described [below](#connecting-maven-to-artifact-mirror)
 
 ## Building Application
 
@@ -22,7 +22,7 @@ mvn package
 ### Synopsys
 
 ```
-artifact-gateway-1.3.0.jar
+artifact-mirror-1.3.1.jar
 --aws.codeartifact.domain=<value>
 --aws.codeartifact.domainOwner=<value>
 --aws.codeartifact.region=<value>
@@ -40,20 +40,20 @@ artifact-gateway-1.3.0.jar
 In a simple case, the application can be run by the following command:
 
 ```sh
-java -jar artifact-gateway-1.3.0.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
+java -jar artifact-mirror-1.3.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
 ```
 
-<!--Alternatively, the Artifact Gateway can be run in a Docker container:
+<!--Alternatively, the Artifact Mirror can be run in a Docker container:
 
 ```sh
-docker build -t artifact-gateway .
-docker run --rm -e ENV DOMAIN=<value> -e DOMAIN_OWNER=<value> -e REGION=<value> -p 80:80 artifact-gateway
+docker build -t artifact-mirror .
+docker run --rm -e ENV DOMAIN=<value> -e DOMAIN_OWNER=<value> -e REGION=<value> -p 80:80 artifact-mirror
 ```
 -->
 
-## Connecting Maven to Artifact Gateway
+## Connecting Maven to Artifact Mirror
 
-Once the Artifact Gateway is running, you can configure Maven to access artifacts through it in a normal way
+Once the Artifact Mirror is running, you can configure Maven to access artifacts through it in a normal way
 without the authentication need. It is supposed that the URL to your private CodeArtifact repository has already
 specified in the `pom.xml`:
 
@@ -70,7 +70,7 @@ specified in the `pom.xml`:
 </project>
 ```
 
-To enable traffic going through Artifact Gateway, add a `<mirror>` section in Maven's `settings.xml` usually located in
+To enable traffic going through Artifact Mirror, add a `<mirror>` section in Maven's `settings.xml` usually located in
 `C:\Users\<username>\.m2` (Windows) or `~/.m2` (Linux, macOS):
 
 ```xml
@@ -79,7 +79,7 @@ To enable traffic going through Artifact Gateway, add a `<mirror>` section in Ma
         <mirror>
             <id>codeartifact-mirror</id>
             <!-- Replace 'my-repository' on the actual repository name -->
-            <url>http://<artifact-gateway-ip>/maven/my-repository/
+            <url>http://<artifact-mirror-ip>/maven/my-repository/
             </url>
             <mirrorOf>codeartifact</mirrorOf>
         </mirror>
@@ -92,24 +92,24 @@ To enable traffic going through Artifact Gateway, add a `<mirror>` section in Ma
 > **Attention!** The mirror connection must rely on HTTP protocol, not HTTPS, while the CodeArtifact repository URL in
 > the `pom.xml` should remain HTTPS.
 
-The value of `<artifact-gateway-ip>` depends on the network architecture you plan to use. There are at least three
+The value of `<artifact-mirror-ip>` depends on the network architecture you plan to use. There are at least three
 possible solutions illustrated in the picture below. In the **first** and **third** solutions, it is assumed that the
-Artifact Gateway is deployed on a separate machine, which exposes **a private IP address** that can be used as the value
-for `<artifact-gateway-ip>`. In the second solution, the variable must be replaced with `localhost`.
+Artifact Mirror is deployed on a separate machine, which exposes **a private IP address** that can be used as the value
+for `<artifact-mirror-ip>`. In the second solution, the variable must be replaced with `localhost`.
 
 > **Note:** If you specify a custom port when running the JAR file, append the port to the IP address or `localhost`,
 > for example, `localhost:4000`.
 
-> **Warning!** Do not deploy the Artifact Gateway on a publicly accessible machine!
+> **Warning!** Do not deploy the Artifact Mirror on a publicly accessible machine!
 
-![Possible Artifact Gateway locations in a network](.doc/artifact-gateway-network.drawio.png)
+![Possible Artifact Mirror locations in a network](.doc/artifact-mirror-network.drawio.png)
 
 ## Deploying Application on Server (Amazon Linux)
 
 Copy the JAR-file to the server machine:
 
 ```sh
-scp -i <rsa-key-file> ./artifact-gateway-1.3.0.jar ec2-user@<server-ip>:/usr/local/
+scp -i <rsa-key-file> ./artifact-mirror-1.3.1.jar ec2-user@<server-ip>:/usr/local/
 ```
 
 Then connect via SSH to the server and execute the script below **replacing `<value>` placeholders**.
@@ -127,19 +127,19 @@ cat << EOF > ~/.aws/credentials
 aws_access_key_id=<value>
 aws_secret_access_key=<value>
 EOF
-mkdir /opt/artifact-gateway/
-wget -P /opt/artifact-gateway/ https://github.com/serhii-yatskovskyi/artifact-gateway/releases/download/artifact-gateway-1.3.0/artifact-gateway-1.3.0.jar
-cat << EOF > /etc/systemd/system/artifact-gateway.service
+mkdir /opt/artifact-mirror/
+wget -P /opt/artifact-mirror/ https://github.com/serhii-yatskovskyi/artifact-mirror/releases/download/artifact-mirror-1.3.1/artifact-mirror-1.3.1.jar
+cat << EOF > /etc/systemd/system/artifact-mirror.service
 [Unit]
-Description=Artifact Gateway
+Description=Artifact Mirror
 [Service]
-ExecStart=/usr/bin/java -jar /opt/artifact-gateway/artifact-gateway-1.3.0.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
+ExecStart=/usr/bin/java -jar /opt/artifact-mirror/artifact-mirror-1.3.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
 Restart=always
 [Install]
 WantedBy=multi-user.target
 EOF
 systemctl daemon-reload
-systemctl enable artifact-gateway
-systemctl start artifact-gateway
+systemctl enable artifact-mirror
+systemctl start artifact-mirror
 exit
 ```

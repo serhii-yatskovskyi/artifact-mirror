@@ -1,4 +1,4 @@
-package org.bayaweaver.artifactgateway;
+package org.bayaweaver.artifactmirror;
 
 import java.util.HashMap;
 import java.util.Map;

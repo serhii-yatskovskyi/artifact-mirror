@@ -1,8 +1,8 @@
-package org.bayaweaver.artifactgateway;
+package org.bayaweaver.artifactmirror;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import org.bayaweaver.artifactgateway.codeartifact.CodeartifactAuthorizationTokenProvider;
+import org.bayaweaver.artifactmirror.codeartifact.CodeartifactAuthorizationTokenProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

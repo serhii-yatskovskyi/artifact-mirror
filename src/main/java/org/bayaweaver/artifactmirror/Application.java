@@ -1,4 +1,4 @@
-package org.bayaweaver.artifactgateway;
+package org.bayaweaver.artifactmirror;
 
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;

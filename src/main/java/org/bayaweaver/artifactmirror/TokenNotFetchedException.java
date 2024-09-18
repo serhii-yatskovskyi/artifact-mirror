@@ -1,4 +1,4 @@
-package org.bayaweaver.artifactgateway;
+package org.bayaweaver.artifactmirror;
 
 public final class TokenNotFetchedException extends Exception {
 
