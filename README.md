@@ -1,5 +1,13 @@
 # Artifact Mirror
 
+<!-- TODO
+- Add a possibility to pass a VPC endpoint address (see details here
+  https://docs.aws.amazon.com/codeartifact/latest/ug/use-codeartifact-from-vpc.html#use-codeartifact-from-vpc-no-private-dns)
+  This is required only in case the flag `--private-dns-enabled` is disabled
+  (https://docs.aws.amazon.com/codeartifact/latest/ug/create-vpc-endpoints.html). When this flag is enablet,
+  the CodeArtifact is accessible in a normal manner, as `my-domain-1111222233334444.d.codeartifact.eu-north-1.amazonaws.com`
+-->
+
 ## Description
 
 Access to CodeArtifact is restricted without an option to disable such behavior, so developers have to configure Maven
