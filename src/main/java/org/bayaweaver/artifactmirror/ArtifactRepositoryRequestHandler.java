@@ -6,8 +6,9 @@ import org.bayaweaver.artifactmirror.codeartifact.CodeartifactAuthorizationToken
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -54,50 +55,70 @@ class ArtifactRepositoryRequestHandler implements HttpHandler {
     @Override
     public void handle (HttpExchange exchange) {
         logger.debug("{}: redirection initiated", exchange.getRequestMethod() + " " + exchange.getRequestURI());
-        try (exchange) {
+        try {
             final String token;
             try {
                 token = tokenProvider.fetchToken();
             } catch (TokenNotFetchedException e) {
                 logger.error("Artifact repository access token was not fetched", e);
-                String m = e.getMessage();
-                exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, m.length());
-                new ByteArrayInputStream(m.getBytes()).transferTo(exchange.getResponseBody());  // TODO Maven does not display this message
+                returnError(exchange, e.getMessage());
                 return;
             }
             final URL artifactUrl = URI.create(artifactRepositoryUrl + exchange.getRequestURI()).toURL();
             HttpURLConnection artifactConnection = (HttpURLConnection) artifactUrl.openConnection();
-            artifactConnection.setRequestMethod(exchange.getRequestMethod());
-            exchange.getRequestHeaders().forEach((headerName, headerValues) -> {
-                if (!headerName.equalsIgnoreCase("Host")) {
-                    for (String headerValue : headerValues) {
-                        artifactConnection.addRequestProperty(headerName, headerValue);
-                    }
-                }
-            });
+            copyRequest(exchange, artifactConnection);
             artifactConnection.setRequestProperty("Authorization", "Bearer " + token);
-            String contentLengthStr = exchange.getRequestHeaders().getFirst("Content-Length");
-            long contentLength = (contentLengthStr != null) ? Long.parseLong(contentLengthStr) : 0;
-            if (contentLength > 0) {
-                artifactConnection.setDoOutput(true);
-                exchange.getRequestBody().transferTo(artifactConnection.getOutputStream());
-            }
-            long artifactContentLength = artifactConnection.getContentLengthLong();
-            artifactContentLength = (artifactContentLength == -1) ? 0 : artifactContentLength;
-            exchange.sendResponseHeaders(
-                    artifactConnection.getResponseCode(),
-                    artifactContentLength < 0 ? 0 : artifactContentLength);
-            if (artifactContentLength > 0) {
-                artifactConnection.getInputStream().transferTo(exchange.getResponseBody());
-            }
-        } catch (IOException e) {
-            logger.error(
-                    "{}: {}",
-                    exchange.getRequestMethod() + " " + exchange.getRequestURI().toString(), e.getMessage());
+            final int responseCode = artifactConnection.getResponseCode();
+            exchange.sendResponseHeaders(responseCode, 0);
+            copyResponse(artifactConnection, exchange);
         } catch (Exception e) {
-            logger.atError().setCause(e).log(
-                    "{}: unexpected error",
-                    exchange.getRequestMethod() + " " + exchange.getRequestURI().toString());
+            String errorMessage = e.toString();
+            logger.error(exchange.getRequestMethod() + " " + exchange.getRequestURI() + ": " + errorMessage, e);
+            returnError(exchange, errorMessage);
+        } finally {
+            exchange.close();
+        }
+    }
+
+    private void copyRequest(HttpExchange exchange, HttpURLConnection artifactConnection) throws IOException {
+        exchange.getRequestHeaders().forEach((headerName, headerValues) -> {
+            if (!headerName.equalsIgnoreCase("Host")) {
+                for (String headerValue : headerValues) {
+                    artifactConnection.addRequestProperty(headerName, headerValue);
+                }
+            }
+        });
+        String requestMethod = exchange.getRequestMethod();
+        if (requestMethod.equals("POST") || requestMethod.equals("PUT")) {
+            artifactConnection.setDoOutput(true); // Implicitly sets POST
+            artifactConnection.setRequestMethod(requestMethod);
+            try (InputStream originalRequestBody = exchange.getRequestBody();
+                 OutputStream artifactRequestBody = artifactConnection.getOutputStream()) {
+
+                originalRequestBody.transferTo(artifactRequestBody);
+            }
+        }
+    }
+
+    private void copyResponse(HttpURLConnection artifactConnection, HttpExchange exchange) throws IOException {
+        InputStream artifactResponseBody;
+        artifactResponseBody = artifactConnection.getErrorStream();
+        if (artifactResponseBody == null) {
+            artifactResponseBody = artifactConnection.getInputStream();
+        }
+        try {
+            artifactResponseBody.transferTo(exchange.getResponseBody());
+        } catch (IOException e) {
+            artifactResponseBody.close();
+        }
+    }
+
+    private void returnError(HttpExchange exchange, String errorMessage) {
+        try {
+            exchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, errorMessage.length());
+            exchange.getResponseBody().write(errorMessage.getBytes());
+        } catch (IOException e1) {
+            logger.error(e1.getMessage(), e1);
         }
     }
 }
