@@ -47,7 +47,8 @@ artifact-mirror-1.3.1.jar
 - `--server.port`. Allows to change server HTTP port. The default value is 80.
 - `--aws.codeartifact.vpc-endpoint`, `--aws.codeartifact.api.vpc-endpoint`. Override default CodeArtifact URLs by
   VPC-Endpoint URLs (AWS Private Links). These options can be used in case the Artifact Mirror is deployed in a
-  private subnet without NAT gateway (i.e. without Internet access).
+  private subnet without NAT gateway (i.e. without Internet access). A value format must include HTTP schema:
+  `https://vpce-000111222-111aaa.d.codeartifact.us-east-1.vpce.amazonaws.com`
 
 In a simple case, the application can be run by the following command:
 
