@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.codeartifact.CodeartifactClientBuilder;
 import software.amazon.awssdk.services.codeartifact.model.GetAuthorizationTokenRequest;
 import software.amazon.awssdk.services.codeartifact.model.GetAuthorizationTokenResponse;
 
+import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -26,11 +27,15 @@ public class CodeartifactAuthorizationTokenProvider implements AuthorizationToke
             String domainOwner,
             String region,
             String accessKeyId,
-            String secretAccessKey) {
+            String secretAccessKey,
+            URI codeartifactApiEndpoint) {
 
         this.domain = domain;
         this.domainOwner = domainOwner;
         CodeartifactClientBuilder codeartifactClientBuilder = CodeartifactClient.builder();
+        if (codeartifactApiEndpoint != null) {
+            codeartifactClientBuilder.endpointOverride(codeartifactApiEndpoint);
+        }
         codeartifactClientBuilder.region(Region.of(region));
         if (accessKeyId != null && !accessKeyId.isEmpty()) {
             AwsCredentials credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);

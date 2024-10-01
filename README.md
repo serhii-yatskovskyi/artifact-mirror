@@ -34,6 +34,7 @@ artifact-mirror-1.3.1.jar
 --aws.codeartifact.domain=<value>
 --aws.codeartifact.domainOwner=<value>
 --aws.codeartifact.region=<value>
+[--aws.codeartifact.vpc-endpoint=<value> & --aws.codeartifact.api.vpc-endpoint=<value>]
 [--aws.accessKeyId=<value> & --aws.secretKey=<value>]
 [--server.port=<value>]
 ```
@@ -44,6 +45,9 @@ artifact-mirror-1.3.1.jar
   [the default credential provider chain](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-default),
   so all approaches to provide credentials are available.
 - `--server.port`. Allows to change server HTTP port. The default value is 80.
+- `--aws.codeartifact.vpc-endpoint`, `--aws.codeartifact.api.vpc-endpoint`. Override default CodeArtifact URLs by
+  VPC-Endpoint URLs (AWS Private Links). These options can be used in case the Artifact Mirror is deployed in a
+  private subnet without NAT gateway (i.e. without Internet access).
 
 In a simple case, the application can be run by the following command:
 

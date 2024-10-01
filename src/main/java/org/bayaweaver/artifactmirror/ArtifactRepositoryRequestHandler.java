@@ -2,7 +2,6 @@ package org.bayaweaver.artifactmirror;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import org.bayaweaver.artifactmirror.codeartifact.CodeartifactAuthorizationTokenProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,50 +9,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 
 class ArtifactRepositoryRequestHandler implements HttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(ArtifactRepositoryRequestHandler.class);
 
-    private final String artifactRepositoryUrl;
+    private final ArtifactRepositoryUrlFactory artifactRepositoryUrlFactory;
     private final AuthorizationTokenProvider tokenProvider;
 
-    private ArtifactRepositoryRequestHandler(String artifactRepositoryUrl, AuthorizationTokenProvider tokenProvider) {
-        this.artifactRepositoryUrl = artifactRepositoryUrl;
+    ArtifactRepositoryRequestHandler(
+            ArtifactRepositoryUrlFactory artifactRepositoryUrlFactory,
+            AuthorizationTokenProvider tokenProvider) {
+
+        this.artifactRepositoryUrlFactory = artifactRepositoryUrlFactory;
         this.tokenProvider = tokenProvider;
     }
 
-    public static HttpHandler codeartifact(
-            String codeartifactDomain,
-            String codeartifactDomainOwner,
-            String codeartifactRegion,
-            String accessKeyId,
-            String secretAccessKey) {
-
-        URL artifactRepositoryUrl;
-        try {
-            // "https://my-domain-111122223333.d.codeartifact.us-east-1.amazonaws.com";
-            artifactRepositoryUrl = URI
-                    .create("https://" + codeartifactDomain + "-" + codeartifactDomainOwner
-                            + ".d.codeartifact." + codeartifactRegion + ".amazonaws.com")
-                    .toURL();
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("URL-improper symbol in 'aws.codeartifact.domain',"
-                    + " 'aws.codeartifact.domain-owner' or 'aws.codeartifact.region'");
-        }
-        AuthorizationTokenProvider tokenProvider = new CodeartifactAuthorizationTokenProvider(
-                codeartifactDomain,
-                codeartifactDomainOwner,
-                codeartifactRegion,
-                accessKeyId,
-                secretAccessKey);
-        return new ArtifactRepositoryRequestHandler(artifactRepositoryUrl.toString(), tokenProvider);
-    }
-
     @Override
-    public void handle (HttpExchange exchange) {
+    public void handle(HttpExchange exchange) {
         logger.debug("{}: redirection initiated", exchange.getRequestMethod() + " " + exchange.getRequestURI());
         try {
             final String token;
@@ -64,7 +37,7 @@ class ArtifactRepositoryRequestHandler implements HttpHandler {
                 returnError(exchange, e.getMessage());
                 return;
             }
-            final URL artifactUrl = URI.create(artifactRepositoryUrl + exchange.getRequestURI()).toURL();
+            final URL artifactUrl = artifactRepositoryUrlFactory.create(exchange);
             HttpURLConnection artifactConnection = (HttpURLConnection) artifactUrl.openConnection();
             copyRequest(exchange, artifactConnection);
             artifactConnection.setRequestProperty("Authorization", "Bearer " + token);
