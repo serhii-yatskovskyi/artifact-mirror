@@ -134,12 +134,6 @@ ssh -i <rsa-key-file> ec2-user@<server-ip>
 ```sh
 sudo -i
 yum install -y java-17-amazon-corretto
-mkdir ~/.aws
-cat << EOF > ~/.aws/credentials
-[default]
-aws_access_key_id=<value>
-aws_secret_access_key=<value>
-EOF
 mkdir /opt/artifact-mirror/
 wget -P /opt/artifact-mirror/ https://github.com/serhii-yatskovskyi/artifact-mirror/releases/download/artifact-mirror-1.3.1/artifact-mirror-1.3.1.jar
 cat << EOF > /etc/systemd/system/artifact-mirror.service
