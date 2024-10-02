@@ -7,3 +7,4 @@
 *.pem
 *.log
 Dockerfile
+.doc/*bkp
