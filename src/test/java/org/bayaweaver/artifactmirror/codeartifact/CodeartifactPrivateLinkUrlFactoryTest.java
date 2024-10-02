@@ -15,7 +15,7 @@ public class CodeartifactPrivateLinkUrlFactoryTest {
     @Test
     public void general() {
         final URI originalUri = URI.create("/maven/my-repository/com/example/my-artifact/1.0/my-artifact-1.0.pom");
-        final String privateLinkUrl = "https://vpce-1234-abcd.d.codeartifact.us-east-1.vpce.amazonaws.com/";
+        final URI privateLinkUrl = URI.create("https://vpce-1234-abcd.d.codeartifact.us-east-1.vpce.amazonaws.com/");
         HttpExchange e = mock(HttpExchange.class);
         when(e.getRequestURI()).thenReturn(originalUri);
         URL result = new CodeartifactPrivateLinkUrlFactory(privateLinkUrl, "my-domain", "111122223333").create(e);
@@ -27,7 +27,7 @@ public class CodeartifactPrivateLinkUrlFactoryTest {
     @Test
     public void privateLinkWithoutTrailSlash() {
         final URI originalUri = URI.create("/maven/my-repository/com/example/my-artifact/1.0/my-artifact-1.0.pom");
-        final String privateLinkUrl = "https://vpce-1234-abcd.d.codeartifact.us-east-1.vpce.amazonaws.com";
+        final URI privateLinkUrl = URI.create("https://vpce-1234-abcd.d.codeartifact.us-east-1.vpce.amazonaws.com");
         HttpExchange e = mock(HttpExchange.class);
         when(e.getRequestURI()).thenReturn(originalUri);
         URL result = new CodeartifactPrivateLinkUrlFactory(privateLinkUrl, "my-domain", "111122223333").create(e);

@@ -16,36 +16,42 @@ public class Application {
         final int port;
         final HttpHandler httpRequestHandler;
         try {
-            ApplicationOptions opts = ApplicationOptions.parse(args);
+            Options opts = Options.parse(args);
             ArtifactRepositoryUrlFactory artifactRepositoryUrlFactory;
-            if (opts.isPresent(ApplicationOptions.Option.CODEARTIFACT_ENDPOINT)) {
+            if (opts.contains(Option.CODEARTIFACT_ENDPOINT)) {
                 artifactRepositoryUrlFactory = new CodeartifactPrivateLinkUrlFactory(
-                        opts.value(ApplicationOptions.Option.CODEARTIFACT_ENDPOINT),
-                        opts.value(ApplicationOptions.Option.CODEARTIFACT_DOMAIN),
-                        opts.value(ApplicationOptions.Option.CODEARTIFACT_DOMAIN_OWNER));
+                        URI.create(opts.value(Option.CODEARTIFACT_ENDPOINT)),
+                        opts.value(Option.CODEARTIFACT_DOMAIN),
+                        opts.value(Option.CODEARTIFACT_DOMAIN_OWNER));
             } else {
                 artifactRepositoryUrlFactory = new CodeartifactUrlFactory(
-                        opts.value(ApplicationOptions.Option.CODEARTIFACT_DOMAIN),
-                        opts.value(ApplicationOptions.Option.CODEARTIFACT_DOMAIN_OWNER),
-                        opts.value(ApplicationOptions.Option.CODEARTIFACT_REGION));
+                        opts.value(Option.CODEARTIFACT_DOMAIN),
+                        opts.value(Option.CODEARTIFACT_DOMAIN_OWNER),
+                        opts.value(Option.CODEARTIFACT_REGION));
             }
             URI codeartifactApiEndpoint = null;
-            if (opts.isPresent(ApplicationOptions.Option.CODEARTIFACT_API_ENDPOINT)) {
-                codeartifactApiEndpoint = URI.create(opts.value(ApplicationOptions.Option.CODEARTIFACT_API_ENDPOINT));
+            if (opts.contains(Option.CODEARTIFACT_API_ENDPOINT)) {
+                if (opts.contains(Option.CODEARTIFACT_ENDPOINT)) {
+                    codeartifactApiEndpoint = URI.create(opts.value(Option.CODEARTIFACT_API_ENDPOINT));
+                } else {
+                    System.out.println(Color.yellow("WARNING: '--" + Option.CODEARTIFACT_API_ENDPOINT
+                            + "' requires '--" + Option.CODEARTIFACT_ENDPOINT
+                            + "' presence. The value will be ignored"));
+                }
             }
             AuthorizationTokenProvider authorizationTokenProvider = new CodeartifactAuthorizationTokenProvider(
-                    opts.value(ApplicationOptions.Option.CODEARTIFACT_DOMAIN),
-                    opts.value(ApplicationOptions.Option.CODEARTIFACT_DOMAIN_OWNER),
-                    opts.value(ApplicationOptions.Option.CODEARTIFACT_REGION),
-                    opts.value(ApplicationOptions.Option.AWS_ACCESS_KEY_ID),
-                    opts.value(ApplicationOptions.Option.AWS_SECRET_ACCESS_KEY),
+                    opts.value(Option.CODEARTIFACT_DOMAIN),
+                    opts.value(Option.CODEARTIFACT_DOMAIN_OWNER),
+                    opts.value(Option.CODEARTIFACT_REGION),
+                    opts.value(Option.AWS_ACCESS_KEY_ID),
+                    opts.value(Option.AWS_SECRET_ACCESS_KEY),
                     codeartifactApiEndpoint);
             httpRequestHandler = new ArtifactRepositoryRequestHandler(
                     artifactRepositoryUrlFactory,
                     authorizationTokenProvider);
-            port = Integer.parseInt(opts.value(ApplicationOptions.Option.HTTP_SERVER_PORT));
+            port = Integer.parseInt(opts.value(Option.SERVER_PORT));
         } catch (Exception e) {
-            System.out.println(Color.red("ERROR: " + e.getMessage()));
+            System.err.println(Color.red("ERROR: " + e.getMessage()));
             System.exit(1);
             return;
         }
@@ -59,6 +65,7 @@ public class Application {
         private static final String RED = "\u001B[31m";
         private static final String GREEN = "\u001B[32m";
         private static final String RESET = "\u001B[0m";
+        private static final String YELLOW = "\u001B[33m";
 
         static String red(String src) {
             return RED + src + RESET;
@@ -66,6 +73,10 @@ public class Application {
 
         static String green(String src) {
             return GREEN + src + RESET;
+        }
+
+        static String yellow(String src) {
+            return YELLOW + src + RESET;
         }
     }
 }

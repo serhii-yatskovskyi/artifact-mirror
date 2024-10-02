@@ -12,7 +12,7 @@ import java.net.URL;
  * "https://my-domain-111122223333.d.codeartifact.us-east-1.amazonaws.com/maven/my-repository/..."
  */
 public class CodeartifactUrlFactory implements ArtifactRepositoryUrlFactory {
-    private final String artifactRepositoryUrl;
+    private final String repositoryUrl;
 
     public CodeartifactUrlFactory(
             String codeartifactDomain,
@@ -20,22 +20,20 @@ public class CodeartifactUrlFactory implements ArtifactRepositoryUrlFactory {
             String codeartifactRegion) {
 
         try {
-            // "https://my-domain-111122223333.d.codeartifact.us-east-1.amazonaws.com";
-            this.artifactRepositoryUrl = URI
+            this.repositoryUrl = URI
                     .create("https://" + codeartifactDomain + "-" + codeartifactDomainOwner
                             + ".d.codeartifact." + codeartifactRegion + ".amazonaws.com")
                     .toURL()
                     .toString();
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Unsupported URL symbol in 'aws.codeartifact.domain',"
-                    + " 'aws.codeartifact.domain-owner' or 'aws.codeartifact.region'");
+            throw new IllegalArgumentException(e);
         }
     }
 
     @Override
     public URL create(HttpExchange exchange) {
         try {
-            return URI.create(artifactRepositoryUrl + exchange.getRequestURI()).toURL();
+            return URI.create(repositoryUrl + exchange.getRequestURI()).toURL();
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
