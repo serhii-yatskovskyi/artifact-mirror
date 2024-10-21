@@ -39,8 +39,8 @@ class ArtifactRepositoryRequestHandler implements HttpHandler {
             }
             final URL artifactUrl = artifactRepositoryUrlFactory.create(exchange);
             HttpURLConnection artifactConnection = (HttpURLConnection) artifactUrl.openConnection();
-            copyRequest(exchange, artifactConnection);
             artifactConnection.setRequestProperty("Authorization", "Bearer " + token);
+            copyRequest(exchange, artifactConnection);
             final int responseCode = artifactConnection.getResponseCode();
             exchange.sendResponseHeaders(responseCode, 0);
             copyResponse(artifactConnection, exchange);
@@ -55,7 +55,7 @@ class ArtifactRepositoryRequestHandler implements HttpHandler {
 
     private void copyRequest(HttpExchange exchange, HttpURLConnection artifactConnection) throws IOException {
         exchange.getRequestHeaders().forEach((headerName, headerValues) -> {
-            if (!headerName.equalsIgnoreCase("Host")) {
+            if (!headerName.equalsIgnoreCase("Host") && !headerName.equalsIgnoreCase("Authorization")) {
                 for (String headerValue : headerValues) {
                     artifactConnection.addRequestProperty(headerName, headerValue);
                 }
