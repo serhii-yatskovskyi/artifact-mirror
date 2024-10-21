@@ -117,11 +117,9 @@ To enable traffic going through Artifact Mirror:
   ```
 
 - **For NPM:**
-  Create the `.npmrc` file if it does not exist: on Linux, in your home directory `~`; on Windows,
-  in `C:\Users\<your-user-name>\`. Then open the file and add the following content:
-  ```text
-  registry=http://<your-user-name>/npm/release/
-  //<your-user-name>/npm/release/:_authToken=NONE
+  Execute the following code:
+  ```shell
+  npm set registry http://<your-user-name>/npm/release/
   ```
 
 > **Attention!** The mirror connection must rely on HTTP protocol, not HTTPS, while the CodeArtifact repository URL in
