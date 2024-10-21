@@ -16,6 +16,10 @@ refreshed regularly to maintain access. The **Artifact Mirror** is designed to a
 consumers (a developer's local machine, a non-cloud CI/CD, etc.) and CodeArtifact, routing all requests to the service
 and equipping them with an authorization token.
 
+Supports:
+- Maven
+- NPM
+
 Note that the Artifact Mirror can be used only within a private network or on your local machine. The details of
 usage are described [below](#connecting-maven-to-artifact-mirror)
 
