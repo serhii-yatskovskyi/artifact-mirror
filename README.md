@@ -72,39 +72,57 @@ docker run --rm -e ENV DOMAIN=<value> -e DOMAIN_OWNER=<value> -e REGION=<value> 
 
 Once the Artifact Mirror is running, you can configure Maven to access artifacts through it in a normal way
 without the authentication need. It is supposed that the URL to your private CodeArtifact repository has already
-specified in the `pom.xml`:
+specified in the `pom.xml` or `package.json`:
 
-```xml
-<project>
-  <repositories>
-      <repository>
-          <id>codeartifact</id>
-          <url>https://my-domain-111122223333.d.codeartifact.us-east-1.amazonaws.com/maven/my-repository</url>
-      </repository>
+- `pom.xml`
+  ```xml
+  <project>
+    <repositories>
+        <repository>
+            <id>codeartifact</id>
+            <url>https://my-domain-111122223333.d.codeartifact.us-east-1.amazonaws.com/maven/my-repository</url>
+        </repository>
+      ...
+    </repositories>
     ...
-  </repositories>
-  ...
-</project>
-```
-
-To enable traffic going through Artifact Mirror, add a `<mirror>` section in Maven's `settings.xml` usually located in
-`C:\Users\<username>\.m2` (Windows) or `~/.m2` (Linux, macOS):
-
-```xml
-<settings>
-    <mirrors>
-        <mirror>
-            <id>codeartifact-mirror</id>
-            <!-- Replace 'my-repository' on the actual repository name -->
-            <url>http://<artifact-mirror-ip>/maven/my-repository/
-            </url>
-            <mirrorOf>codeartifact</mirrorOf>
-        </mirror>
-        ...
-    </mirrors>
+  </project>
+  ```
+- `package.json`
+  ```json
+  {
+    "registry": "https://my-domain-111122223333.d.codeartifact.us-east-1.amazonaws.com/npm/my-repository",
     ...
-</settings>
-```
+  }
+  ```
+
+To enable traffic going through Artifact Mirror:
+
+- **For Maven:**
+  Add a `<mirror>` section in Maven's `settings.xml` usually located in
+  `C:\Users\<username>\.m2` (Windows) or `~/.m2` (Linux, macOS):
+  ```xml
+  <settings>
+      <mirrors>
+          <mirror>
+              <id>codeartifact-mirror</id>
+              <!-- Replace 'my-repository' on the actual repository name -->
+              <url>http://<artifact-mirror-ip>/maven/my-repository/
+              </url>
+              <mirrorOf>codeartifact</mirrorOf>
+          </mirror>
+          ...
+      </mirrors>
+      ...
+  </settings>
+  ```
+
+- **For NPM:**
+  Create the `.npmrc` file if it does not exist: on Linux, in your home directory `~`; on Windows,
+  in `C:\Users\<your-user-name>\`. Then open the file and add the following content:
+  ```text
+  registry=http://<your-user-name>/npm/release/
+  //<your-user-name>/npm/release/:_authToken=NONE
+  ```
 
 > **Attention!** The mirror connection must rely on HTTP protocol, not HTTPS, while the CodeArtifact repository URL in
 > the `pom.xml` should remain HTTPS.
@@ -115,13 +133,13 @@ Artifact Mirror is deployed on a separate machine, which exposes **a private IP 
 for `<artifact-mirror-ip>`. In the second solution, the variable must be replaced with `localhost`.
 
 > **Note:** If you specify a custom port when running the JAR file, append the port to the IP address or `localhost`,
-> for example, `localhost:4000`.
-
-> **Warning!** Do not deploy the Artifact Mirror on a publicly accessible machine!
+> for example, `<artifact-mirror-ip>:4000` or `localhost:4000`.
 
 ![Possible Artifact Mirror locations in a network](.doc/artifact-mirror-network.drawio.png)
 
 ## Deploying Application on Server (Amazon Linux)
+
+> **Warning!** Do not deploy the Artifact Mirror on a publicly accessible machine!
 
 Copy the JAR-file to the server machine:
 
