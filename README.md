@@ -1,13 +1,5 @@
 # Artifact Mirror
 
-<!-- TODO
-- Add a possibility to pass a VPC endpoint address (see details here
-  https://docs.aws.amazon.com/codeartifact/latest/ug/use-codeartifact-from-vpc.html#use-codeartifact-from-vpc-no-private-dns)
-  This is required only in case the flag `--private-dns-enabled` is disabled
-  (https://docs.aws.amazon.com/codeartifact/latest/ug/create-vpc-endpoints.html). When this flag is enablet,
-  the CodeArtifact is accessible in a normal manner, as `my-domain-1111222233334444.d.codeartifact.eu-north-1.amazonaws.com`
--->
-
 ## Description
 
 Access to CodeArtifact is restricted without an option to disable such behavior, so developers have to configure Maven
@@ -34,7 +26,7 @@ mvn package
 ### Synopsys
 
 ```
-artifact-mirror-1.3.1.jar
+artifact-mirror-1.4.4.jar
 --aws.codeartifact.domain=<value>
 --aws.codeartifact.domainOwner=<value>
 --aws.codeartifact.region=<value>
@@ -57,7 +49,7 @@ artifact-mirror-1.3.1.jar
 In a simple case, the application can be run by the following command:
 
 ```sh
-java -jar artifact-mirror-1.3.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
+java -jar artifact-mirror-1.4.4.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
 ```
 
 <!--Alternatively, the Artifact Mirror can be run in a Docker container:
@@ -119,7 +111,7 @@ To enable traffic going through Artifact Mirror:
 - **For NPM:**
   Execute the following code:
   ```shell
-  npm set registry http://<your-user-name>/npm/release/
+  npm set registry http://<artifact-mirror-ip>/npm/release/
   ```
 
 > **Attention!** The mirror connection must rely on HTTP protocol, not HTTPS, while the CodeArtifact repository URL in
@@ -142,7 +134,7 @@ for `<artifact-mirror-ip>`. In the second solution, the variable must be replace
 Copy the JAR-file to the server machine:
 
 ```sh
-scp -i <rsa-key-file> ./artifact-mirror-1.3.1.jar ec2-user@<server-ip>:/usr/local/
+scp -i <rsa-key-file> ./artifact-mirror-1.4.4.jar ec2-user@<server-ip>:/usr/local/
 ```
 
 Then connect via SSH to the server and execute the script below **replacing `<value>` placeholders**.
@@ -155,12 +147,12 @@ ssh -i <rsa-key-file> ec2-user@<server-ip>
 sudo -i
 yum install -y java-17-amazon-corretto
 mkdir /opt/artifact-mirror/
-wget -P /opt/artifact-mirror/ https://github.com/serhii-yatskovskyi/artifact-mirror/releases/download/artifact-mirror-1.3.1/artifact-mirror-1.3.1.jar
+wget -P /opt/artifact-mirror/ https://github.com/serhii-yatskovskyi/artifact-mirror/releases/download/artifact-mirror-1.4.4/artifact-mirror-1.4.4.jar
 cat << EOF > /etc/systemd/system/artifact-mirror.service
 [Unit]
 Description=Artifact Mirror
 [Service]
-ExecStart=/usr/bin/java -jar /opt/artifact-mirror/artifact-mirror-1.3.1.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
+ExecStart=/usr/bin/java -jar /opt/artifact-mirror/artifact-mirror-1.4.4.jar --aws.codeartifact.domain=<value> --aws.codeartifact.domainOwner=<value> --aws.codeartifact.region=<value>
 Restart=always
 [Install]
 WantedBy=multi-user.target
