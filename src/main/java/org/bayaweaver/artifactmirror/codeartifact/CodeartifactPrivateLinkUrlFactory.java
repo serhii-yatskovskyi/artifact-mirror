@@ -47,4 +47,15 @@ public class CodeartifactPrivateLinkUrlFactory implements ArtifactRepositoryUrlF
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public URL repositoryUrl() {
+        try {
+            String s = privateLinkUrl.toString();
+            s = s.substring(0, s.length() - 1);
+            return URI.create(s).toURL();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

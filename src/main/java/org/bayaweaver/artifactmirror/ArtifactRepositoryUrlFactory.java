@@ -7,4 +7,5 @@ import java.net.URL;
 public interface ArtifactRepositoryUrlFactory {
 
     URL create(HttpExchange exchange);
+    URL repositoryUrl();
 }
